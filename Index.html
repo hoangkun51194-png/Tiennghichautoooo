@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <title>Tiên Nghịch Auto Tool V1.5</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      min-height: 100vh;
+      background: #080d18;
+      color: #ffffff;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #151c2c;
+      border: 1px solid #29344d;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 25px rgba(0,0,0,.25);
+    }
+
+    h1 {
+      margin: 0 0 7px;
+      font-size: 25px;
+    }
+
+    h2, h3 {
+      margin-top: 0;
+    }
+
+    .subtitle {
+      color: #9ca8bd;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .status-badge {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 7px 12px;
+      border-radius: 30px;
+      background: #374151;
+      color: #d1d5db;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .status-badge.running {
+      background: #166534;
+      color: #dcfce7;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 14px;
+      padding: 15px 10px;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:active {
+      transform: scale(.97);
+    }
+
+    .start {
+      background: #2563eb;
+    }
+
+    .stop {
+      background: #dc2626;
+    }
+
+    .gray {
+      background: #374151;
+    }
+
+    .task {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid #29344d;
+    }
+
+    .task:last-child {
+      border-bottom: none;
+    }
+
+    .task input {
+      width: 21px;
+      height: 21px;
+      accent-color: #2563eb;
+      flex-shrink: 0;
+    }
+
+    .task-title {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .task-desc {
+      margin-top: 3px;
+      color: #8f9bb0;
+      font-size: 12px;
+    }
+
+    .status-box {
+      min-height: 50px;
+      padding: 13px;
+      border-radius: 12px;
+      background: #0b1220;
+      color: #93c5fd;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .progress-wrap {
+      margin-top: 14px;
+      height: 10px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #29344d;
+    }
+
+    .progress {
+      width: 0%;
+      height: 100%;
+      background: #2563eb;
+      transition: width .4s ease;
+    }
+
+    .log {
+      height: 210px;
+      overflow-y: auto;
+      padding: 13px;
+      border-radius: 12px;
+      background: #050912;
+      color: #cbd5e1;
+      font-family: monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      word-break: break-word;
+    }
+
+    .log-line {
+      margin-bottom: 2px;
+    }
+
+    .footer {
+      text-align: center;
+      color: #667085;
+      font-size: 11px;
+      padding: 5px 0 20px;
+    }
+
+    @media (max-width: 430px) {
+      body {
+        padding: 12px;
+      }
+
+      .card {
+        padding: 15px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      button {
+        font-size: 15px;
+        padding: 14px 8px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- TIÊU ĐỀ -->
+  <div class="card">
+
+    <h1>⚔️ Tiên Nghịch Auto Tool V1.5</h1>
+
+    <div class="subtitle">
+      Web App thử nghiệm — giao diện Auto Tool chạy trên
+      iPhone, iPad và Android.
+    </div>
+
+    <div id="stateBadge" class="status-badge">
+      ● ĐANG DỪNG
+    </div>
+
+  </div>
+
+
+  <!-- NÚT ĐIỀU KHIỂN -->
+  <div class="card">
+
+    <div class="buttons">
+
+      <button
+        class="start"
+        onclick="startAuto()">
+        ▶ CHẠY AUTO
+      </button>
+
+      <button
+        class="stop"
+        onclick="stopAuto()">
+        ■ DỪNG
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- NHIỆM VỤ HẰNG NGÀY -->
+  <div class="card">
+
+    <h3>📋 Nhiệm vụ hằng ngày</h3>
+
+    <label class="task">
+
+      <input
+        id="dailyCheck"
+        type="checkbox"
+        checked>
+
+      <div>
+
+        <div class="task-title">
+          Nhiệm vụ hằng ngày
+        </div>
+
+        <div class="task-desc">
+          Bật để đưa nhiệm vụ hằng ngày vào chu trình Auto.
+        </div>
+
+      </div>
+
+    </label>
+
+
+    <label class="task">
+
+      <input
+        id="dailyReward"
+        type="checkbox"
+        checked>
+
+      <div>
+
+        <div class="task-title">
+          Kiểm tra phần thưởng
+        </div>
+
+        <div class="task-desc">
+          Mô phỏng bước kiểm tra phần thưởng.
+        </div>
+
+      </div>
+
+    </label>
+
+  </div>
+
+
+  <!-- LEO THÁP -->
+  <div class="card">
+
+    <h3>🏯 Leo tháp</h3>
+
+    <label class="task">
+
+      <input
+        id="towerCheck"
+        type="checkbox"
+        checked>
+
+      <div>
+
+        <div class="task-title">
+          Tự động leo tháp
+        </div>
+
+        <div class="task-desc">
+          Mô phỏng quá trình leo từng tầng.
+        </div>
+
+      </div>
+
+    </label>
+
+
+    <label class="task">
+
+      <input
+        id="towerRepeat"
+        type="checkbox">
+
+      <div>
+
+        <div class="task-title">
+          Lặp lại chu kỳ
+        </div>
+
+        <div class="task-desc">
+          Tiếp tục chu kỳ sau khi hoàn thành.
+        </div>
+
+      </div>
+
+    </label>
+
+  </div>
+
+
+  <!-- TRẠNG THÁI -->
+  <div class="card">
+
+    <h3>📡 Trạng thái</h3>
+
+    <div
+      id="statusBox"
+      class="status-box">
+      Sẵn sàng. Nhấn “CHẠY AUTO” để bắt đầu.
+    </div>
+
+    <div class="progress-wrap">
+
+      <div
+        id="progress"
+        class="progress">
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- LOG -->
+  <div class="card">
+
+    <h3>📝 Log hoạt động</h3>
+
+    <div
+      id="log"
+      class="log">
+    </div>
+
+    <br>
+
+    <button
+      class="gray"
+      onclick="clearLog()">
+      🗑 XÓA LOG
+    </button>
+
+  </div>
+
+
+  <div class="footer">
+    Tiên Nghịch Auto Tool V1.5 — phiên bản giao diện thử nghiệm.
+    Chưa điều khiển trực tiếp game.
+  </div>
+
+</div>
+
+
+<script>
+
+  /* =========================
+     BIẾN HỆ THỐNG
+     ========================= */
+
+  let running = false;
+
+  let timer = null;
+
+  let step = 0;
+
+  let towerFloor = 0;
+
+
+  /* =========================
+     LOG
+     ========================= */
+
+  function addLog(message) {
+
+    const log = document.getElementById("log");
+
+    const now =
+      new Date().toLocaleTimeString("vi-VN");
+
+    const line =
+      document.createElement("div");
+
+    line.className = "log-line";
+
+    line.textContent =
+      "[" + now + "] " + message;
+
+    log.appendChild(line);
+
+    log.scrollTop =
+      log.scrollHeight;
+  }
+
+
+  /* =========================
+     STATUS
+     ========================= */
+
+  function setStatus(message) {
+
+    document.getElementById(
+      "statusBox"
+    ).textContent = message;
+
+  }
+
+
+  /* =========================
+     PROGRESS
+     ========================= */
+
+  function setProgress(value) {
+
+    if (value < 0) value = 0;
+
+    if (value > 100) value = 100;
+
+    document.getElementById(
+      "progress"
+    ).style.width = value + "%";
+
+  }
+
+
+  /* =========================
+     START AUTO
+     ========================= */
+
+  function startAuto() {
+
+    if (running) {
+
+      addLog(
+        "Auto đang chạy."
+      );
+
+      return;
+    }
+
+
+    running = true;
+
+    step = 0;
+
+    towerFloor = 0;
+
+
+    const badge =
+      document.getElementById(
+        "stateBadge"
+      );
+
+    badge.textContent =
+      "● ĐANG CHẠY";
+
+    badge.classList.add(
+      "running"
+    );
+
+
+    setStatus(
+      "Auto Tool đang bắt đầu..."
+    );
+
+    setProgress(0);
+
+    addLog(
+      "================================"
+    );
+
+    addLog(
+      "Bắt đầu Auto Tool V1.5"
+    );
+
+
+    timer =
+      setInterval(
+        autoLoop,
+        1800
+      );
+
+  }
+
+
+  /* =========================
+     AUTO LOOP
+     ========================= */
+
+  function autoLoop() {
+
+    step++;
+
+
+    /* BƯỚC 1 */
+
+    if (
+      step === 1
+    ) {
+
+      if (
+        document.getElementById(
+          "dailyCheck"
+        ).checked
+      ) {
+
+        setStatus(
+          "Đang kiểm tra nhiệm vụ hằng ngày..."
+        );
+
+        setProgress(20);
+
+        addLog(
+          "Kiểm tra nhiệm vụ hằng ngày."
+        );
+
+      } else {
+
+        addLog(
+          "Đã bỏ qua nhiệm vụ hằng ngày."
+        );
+
+      }
+
+      return;
+    }
+
+
+    /* BƯỚC 2 */
+
+    if (
+      step === 2
+    ) {
+
+      if (
+        document.getElementById(
+          "dailyReward"
+        ).checked
+      ) {
+
+        setStatus(
+          "Đang kiểm tra phần thưởng..."
+        );
+
+        setProgress(40);
+
+        addLog(
+          "Kiểm tra phần thưởng."
+        );
+
+      } else {
+
+        addLog(
+          "Đã bỏ qua kiểm tra phần thưởng."
+        );
+
+      }
+
+      return;
+    }
+
+
+    /* BƯỚC 3 */
+
+    if (
+      step === 3
+    ) {
+
+      if (
+        document.getElementById(
+          "towerCheck"
+        ).checked
+      ) {
+
+        towerFloor++;
+
+        setStatus(
+          "Đang leo tháp — tầng " +
+          towerFloor
+        );
+
+        setProgress(60);
+
+        addLog(
+          "Leo tháp: tầng " +
+          towerFloor
+        );
+
+      } else {
+
+        addLog(
+          "Đã tắt chức năng leo tháp."
+        );
+
+      }
+
+      return;
+    }
+
+
+    /* BƯỚC 4 */
+
+    if (
+      step === 4
+    ) {
+
+      if (
+        document.getElementById(
+          "towerCheck"
+        ).checked
+      ) {
+
+        towerFloor++;
+
+        setStatus(
+          "Đang leo tháp — tầng " +
+          towerFloor
+        );
+
+        setProgress(80);
+
+        addLog(
+          "Leo tháp: tầng " +
+          towerFloor
+        );
+
+      }
+
+      return;
+    }
+
+
+    /* BƯỚC 5 */
+
+    if (
+      step >= 5
+    ) {
+
+      setProgress(100);
+
+      setStatus(
+        "Chu kỳ Auto đã hoàn thành."
+      );
+
+      addLog(
+        "Hoàn thành một chu kỳ Auto."
+      );
+
+
+      const repeat =
+        document.getElementById(
+          "towerRepeat"
+        ).checked;
+
+
+      if (repeat) {
+
+        addLog(
+          "Chế độ lặp đang bật — bắt đầu chu kỳ mới."
+        );
+
+        step = 0;
+
+        towerFloor = 0;
+
+        setProgress(0);
+
+      } else {
+
+        stopAuto(
+          true
+        );
+
+      }
+
+    }
+
+  }
+
+
+  /* =========================
+     STOP AUTO
+     ========================= */
+
+  function stopAuto(
+    completed = false
+  ) {
+
+    running = false;
+
+
+    if (timer !== null) {
+
+      clearInterval(timer);
+
+      timer = null;
+
+    }
+
+
+    const badge =
+      document.getElementById(
+        "stateBadge"
+      );
+
+    badge.textContent =
+      "● ĐANG DỪNG";
+
+    badge.classList.remove(
+      "running"
+    );
+
+
+    if (!completed) {
+
+      setStatus(
+        "Auto đã được dừng."
+      );
+
+      addLog(
+        "Đã dừng Auto Tool."
+      );
+
+    }
+
+
+    step = 0;
+
+  }
+
+
+  /* =========================
+     CLEAR LOG
+     ========================= */
+
+  function clearLog() {
+
+    document.getElementById(
+      "log"
+    ).innerHTML = "";
+
+    addLog(
+      "Log đã được xóa."
+    );
+
+  }
+
+
+  /* =========================
+     KHỞI ĐỘNG
+     ========================= */
+
+  addLog(
+    "V1.5 đã tải thành công."
+  );
+
+  addLog(
+    "Sẵn sàng để chạy thử."
+  );
+
+</script>
+
+</body>
+</html>
